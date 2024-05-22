@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Ratings</title>
+    <style>
+      .movie {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Movie Ratings</h1>
+    <form id="movieForm">
+      <label for="title">Title:</label>
+      <input type="text" id="title" required minlength="2" />
+      <label for="rating">Rating (0-10):</label>
+      <input type="number" id="rating" required min="0" max="10" />
+      <button type="submit">Submit</button>
+    </form>
+    <div id="movies"></div>
+
+    <button class="sortByTitleAsc">Sort by Title (A-Z)</button>
+    <button class="sortByTitleDesc">Sort by Title (Z-A)</button>
+    <button class="sortByRatingAsc">Sort by Rating (Low to High)</button>
+    <button class="sortByRatingDesc">Sort by Rating (High to Low)</button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#movieForm").submit(function (event) {
+          event.preventDefault();
+          var title = $("#title").val();
+          var rating = $("#rating").val();
+          addMovie(title, rating);
+        });
+
+        function addMovie(title, rating) {
+          var movieElement = $('<div class="movie"><strong>Title:</strong> ' + title + " <strong>Rating:</strong> " + rating + ' <button class="remove">Remove</button></div>');
+          $("#movies").append(movieElement);
+        }
+        $(document).on("click", ".remove", function () {
+          $(this).parent().remove();
+        });
+        $(".sortByTitleAsc").click(function () {
+          sortMovies("title", "asc");
+        });
+
+        $(".sortByTitleDesc").click(function () {
+          sortMovies("title", "desc");
+        });
+
+        $(".sortByRatingAsc").click(function () {
+          console.log("Sorting by rating (low to high)");
+          sortMovies("rating", "asc");
+        });
+
+        $(".sortByRatingDesc").click(function () {
+          console.log("Sorting by rating (high to low)");
+          sortMovies("rating", "desc");
+        });
+
+        function sortMovies(property, order) {
+          console.log("Sorting movies by:", property, "in", order, "order");
+          var movies = $(".movie").toArray();
+          movies.sort(function (a, b) {
+            var aValue = getProperty($(a), property);
+            var bValue = getProperty($(b), property);
+            if (property === "title") {
+              return order === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+            } else {
+              return order === "asc" ? parseFloat(aValue) - parseFloat(bValue) : parseFloat(bValue) - parseFloat(aValue);
+            }
+          });
+          $("#movies").empty().append(movies);
+        }
+
+        function getProperty(movie, property) {
+          if (property === "title") {
+            return movie
+              .find('strong:contains("Title:")')
+              .parent()
+              .contents()
+              .filter(function () {
+                return this.nodeType === 3;
+              })
+              .text()
+              .trim();
+          } else if (property === "rating") {
+            return parseFloat(movie.find('strong:contains("Rating:")').parent().text().match(/\d+/)[0]);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
